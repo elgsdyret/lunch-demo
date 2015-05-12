@@ -1,19 +1,37 @@
 
-
-var stream = require( 'stream' );
 var csv = require( 'csv' );
-var JSONStream = require( 'JSONStream' );
+var es = require('event-stream');
+var jsonStream = require('JSONStream');
+var url = require('url');
 
-module.exports = function( data ) {
+module.exports = function( createStream ) {
 
-  function handleRequest(req, resp){ 
-    var s = new stream.Readable();
-    s._read = function noop() {};
-    s.push( data.body );  
+  function handleRequest(req, resp){     
 
-    s.pipe( csv.parse() ).pipe( JSONStream.stringify() ).pipe( resp );
+    // filter favicon
+    if (req.url === '/favicon.ico') {
+      resp.writeHead(200, {'Content-Type': 'image/x-icon'} );
+      resp.end();
+      return;
+    }
 
-    //resp.end ( data.body );
+    var queryObject = url.parse(req.url,true).query;
+    var user = queryObject.user && queryObject.user.trim() || 'nnorskov';
+
+    createStream().pipe( csv.parse() )      
+      .pipe( es.map( function ( data, cb ) {
+
+        // only grab the lines where the first column is the requested user!
+        var columnUser = data[0] && data[0].trim() || '';
+        if ( columnUser !== user ) {    
+          return cb();          
+        }
+        
+        var simpleData = data.slice(0, 3);
+        cb( null, simpleData );
+      }))          
+      .pipe( jsonStream.stringify() )      
+      .pipe( resp );            
   }
 
 

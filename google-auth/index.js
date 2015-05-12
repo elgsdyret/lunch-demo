@@ -1,6 +1,7 @@
 
-var GoogleClientLogin = require( 'googleclientlogin' ).GoogleClientLogin;
 var request = require( 'request' );
+var stream = require( 'stream' );
+var GoogleClientLogin = require( 'googleclientlogin' ).GoogleClientLogin;
 var server = require( './server' ); // require "own" dependency
 
 var username = process.env.GUserName;
@@ -37,7 +38,15 @@ googleAuth.on(GoogleClientLogin.events.login, function( ) {
       return;
     }
 
-    server( resp );
+    var streamBuilder = function() {  
+      var s = new stream.Readable();
+      s._read = function noop() {};
+      s.push( resp.body );
+      s.push( null );    
+      return s;
+    }
+
+    server( streamBuilder );
 
   } );
 });
