@@ -18,7 +18,8 @@ module.exports = function( createStream ) {
     var queryObject = url.parse(req.url,true).query;
     var user = queryObject.user && queryObject.user.trim() || 'nnorskov';
 
-    createStream().pipe( csv.parse() )      
+    createStream()
+      .pipe( csv.parse() )      
       .pipe( es.map( function ( data, cb ) {
 
         // only grab the lines where the first column is the requested user!
