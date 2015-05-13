@@ -6,5 +6,5 @@ Either set them in 2 env variables: GUserName and GPassword
 
 Or they can be passed into the script when running like this:
 
-GUSerName=nnorskov@configit.com GPassword=Password1 node app.js
+GUSerName=nnorskov@configit.com GPassword=Password1 node index.js
 
